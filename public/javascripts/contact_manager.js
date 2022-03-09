@@ -40,6 +40,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
       return allContacts.filter(contact => contact.full_name.toLowerCase().includes(searchString.toLowerCase()));
     }
+
+    async updateContact(id, updatedContactInfo) {
+      const UPDATE_CONTACT_URL = `/api/contacts/${id}`;
+      const HEADERS = {
+        'Content-Type': 'application/json',
+      }
+
+      try {
+        return await fetch(UPDATE_CONTACT_URL, {
+          method: 'PUT',
+          headers: HEADERS,
+          body: JSON.stringify(updatedContactInfo),
+        }).then(response => response.json());
+      } catch (error) {
+        return {error: error};
+      }
+    }
   }
 
   class View {
@@ -69,7 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // model.deleteContact(6).then(response => console.log(`delete status: ${response}`));
 
-  model.searchContacts('I').then(response => response.forEach(contact => console.log(contact)));
+  // model.searchContacts('I').then(response => response.forEach(contact => console.log(contact)));
 
-  model.searchContacts('n').then(response => response.forEach(contact => console.log(contact)));
-});
+  // model.searchContacts('n').then(response => response.forEach(contact => console.log(contact)));
+
+//   model.updateContact(4, {
+//     full_name: 'Scooby-Doo',
+//     phone_number: '119',
+//     email: 'scoobz@zoinks.com',
+//     tags: 'investigator, dog, icon',
+//   }).then(response => console.log(response));
+// });
