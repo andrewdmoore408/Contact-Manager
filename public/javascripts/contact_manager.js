@@ -1,4 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
   class Model {
     #tagList;
 
@@ -34,10 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return {error: false, message: `${tagName} has been added`};
     }
 
+    async filterByTag(tagName) {
+      const allContacts = await this.getAllContacts();
+
+      return allContacts.filter(contact => {
+        if (!contact.tags) return false;
+
+        const tags = contact.tags.split(',');
+        return tags.includes(tagName);
+      });
+    }
+
     async getAllContacts() {
       const ALL_CONTACTS_URL = '/api/contacts';
 
-      return await fetch(ALL_CONTACTS_URL).then(response => response.json());
+      const response = await fetch(ALL_CONTACTS_URL);
+      const allContacts = await response.json();
+      return allContacts;
+
+      // return await fetch(ALL_CONTACTS_URL).then(response => response.json());
     }
 
     async deleteContact(id) {
@@ -90,27 +104,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOMContentLoaded!');
   let model = new Model();
 
-  // model.addContact({
-  //   full_name: "Scooby-Doo",
-  //   email: "email@addy.com",
-  //   phone_number: "119",
-  //   tags: "investigator, programmer",
-  // }).then(response => console.log(response));
+  model.addContact({
+    full_name: "Scooby-Doo",
+    email: "email@addy.com",
+    phone_number: "119",
+    tags: "investigator,programmer",
+  }).then(response => console.log(response));
 
-  // model.getAllContacts().then(response => console.log(`response is: ${response.forEach(object => console.log(object))}`));
+  model.getAllContacts().then(response => console.log(`response is: ${response.forEach(object => console.log(object))}`));
 
-  // model.deleteContact(6).then(response => console.log(`delete status: ${response}`));
+  // model.deleteContact(7).then(response => console.log(`delete status: ${response}`));
 
-  // model.searchContacts('I').then(response => response.forEach(contact => console.log(contact)));
+  model.searchContacts('I').then(response => response.forEach(contact => console.log(contact)));
 
-  // model.searchContacts('n').then(response => response.forEach(contact => console.log(contact)));
+  model.searchContacts('n').then(response => response.forEach(contact => console.log(contact)));
 
-//   model.updateContact(4, {
-//     full_name: 'Scooby-Doo',
-//     phone_number: '119',
-//     email: 'scoobz@zoinks.com',
-//     tags: 'investigator, dog, icon',
-//   }).then(response => console.log(response));
+  model.updateContact(4, {
+    full_name: 'Scooby-Doo',
+    phone_number: '119',
+    email: 'scoobz@zoinks.com',
+    tags: 'investigator,dog,icon',
+  }).then(response => console.log(response));
+
+console.log(model.addTag('investigator'));
+console.log(model.addTag('actor'));
+console.log(model.addTag('icon'));
+console.log(model.addTag('engineering'));
+console.log(model.addTag('DOG'));
+
+model.filterByTag('work').then(response => console.log(response));
+
+model.filterByTag('friend').then(response => console.log(response));
+
+model.filterByTag('dog').then(response => console.log(response));
+
 });
