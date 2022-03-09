@@ -1,5 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   class Model {
+    #tagList;
+
+    constructor() {
+      this.#tagList = [];
+    }
+
     async addContact(contactInfo) {
       const ADD_CONTACT_URL = '/api/contacts/';
       const HEADERS = {
@@ -15,6 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (error) {
         return {error: error};
       }
+    }
+
+    addTag(tagName) {
+      tagName = tagName.toLowerCase();
+
+      if (this.#tagList.includes(tagName)) {
+        return {error: true, message: `The tag "${tagName}"  already exists`};
+      }
+
+      this.#tagList.push(tagName);
+      return {error: false, message: `${tagName} has been added`};
     }
 
     async getAllContacts() {
@@ -96,4 +113,4 @@ document.addEventListener('DOMContentLoaded', () => {
 //     email: 'scoobz@zoinks.com',
 //     tags: 'investigator, dog, icon',
 //   }).then(response => console.log(response));
-// });
+});
