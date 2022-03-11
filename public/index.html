@@ -32,7 +32,7 @@
   </main>
   <script id="tagsTemplate" type="text/x-handlebars">
     {{#each tags}}
-      <a class="tag">
+      <a class="tag" data-tagName="{{this}}">
         {{this}}
       </a>
     {{/each}}
