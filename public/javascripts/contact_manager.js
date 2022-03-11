@@ -163,10 +163,54 @@
   class Controller {
     #model;
     #view;
+    #currentTagFilter;
 
     constructor() {
       this.#view = new View();
       this.#model = new Model();
+      this.#currentTagFilter = null;
+
+      this.#view.bindTagClick(this.#handleTagClick);
+
+      this.#displayAllContacts();
+    }
+
+    #handleTagClick = (event) => {
+      const tagName = event.target.getAttribute('data-tagName');
+
+      if (this.#currentTagFilter === tagName) {
+        this.#currentTagFilter = null;
+        this.#displayAllContacts();
+      } else {
+        this.#currentTagFilter = tagName;
+        const filteredContacts = this.#model.filterByTag(tagName);
+
+        filteredContacts.then(filteredContacts => {
+          filteredContacts = this.#splitContactTags(filteredContacts);
+
+          this.#view.renderContacts(filteredContacts);
+        });
+      }
+    }
+
+    #displayAllContacts() {
+      const allContacts = this.#model.getAllContacts();
+
+      allContacts.then(contacts => {
+        contacts = this.#splitContactTags(contacts);
+
+        this.#view.renderContacts(contacts);
+      })
+    }
+
+    #splitContactTags(contacts) {
+      return contacts.map(contact => {
+        if (contact.tags) {
+          contact.tags = contact.tags.split(',');
+        }
+
+        return contact;
+      });
     }
   }
 
@@ -174,25 +218,6 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded!');
   let model = new Model();
   let view = new View();
-
-  view.bindTagClick(event => {
-    console.log('tag clicked!');
-    const tagName = event.target.getAttribute('data-tagName');
-
-    const filteredContacts = model.filterByTag(tagName);
-
-    filteredContacts.then(filteredContacts => {
-      filteredContacts = filteredContacts.map(contact => {
-        if (contact.tags) {
-          contact.tags = contact.tags.split(',');
-        }
-
-        return contact;
-      });
-
-      view.renderContacts(filteredContacts);
-    });
-  });
 
   model.addTag('dog');
   model.addTag('frog');
@@ -203,19 +228,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   view.renderTags(tags);
 
-  model.getAllContacts().then(contacts => {
-    contacts = contacts.map(contact => {
-      if (contact.tags) {
-        contact.tags = contact.tags.split(',');
-      }
+  new Controller();
 
-      return contact;
-    });
+  // model.getAllContacts().then(contacts => {
+  //   contacts = contacts.map(contact => {
+  //     if (contact.tags) {
+  //       contact.tags = contact.tags.split(',');
+  //     }
 
-    view.renderContacts(contacts);
+  //     return contact;
+  //   });
+
+  //   view.renderContacts(contacts);
 
 
-  });
+  // });
 
   // view.renderContacts(model.getAllContacts());
 
