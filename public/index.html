@@ -29,24 +29,22 @@
       <div id="tags"></div>
     </div>
     <div id="contacts"></div>
-    <dialog id="addContact">
-      <form>
-        <legend>
-          Add contact info
-        </legend>
-        <label for="full_name">Full name
-          <input type="text" name="full_name" placeholder="Name">
-        </label>
-        <label for="email">Email
-          <input type="email" name="email" placeholder="Email">
-        </label>
-        <label for="phone_number">Email
-          <input type="email" name="phone_number" placeholder="Phone number">
-        </label>
-        <button type="submit">Add contact</button>
-        <button type="button" autofocus>Cancel</button>
-      </form>
-    </dialog>
+    <form id="addContactForm" class="hidden">
+      <legend>
+        Add contact info
+      </legend>
+      <label for="full_name">Full name
+        <input type="text" name="full_name" placeholder="Name" required>
+      </label>
+      <label for="email">Email
+        <input type="email" name="email" placeholder="Email" required>
+      </label>
+      <label for="phone_number">Email
+        <input type="text" name="phone_number" placeholder="Phone number" required>
+      </label>
+      <button type="submit">Add contact</button>
+      <button type="button" id="cancelAddContact" autofocus>Cancel</button>
+    </form>
   </main>
   <script id="tagsTemplate" type="text/x-handlebars">
     {{#each tags}}

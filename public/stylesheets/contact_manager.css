@@ -57,6 +57,14 @@ a.activeFilter {
   font-style: italic;
 }
 
-dialog input {
-  display: block;
+.hidden {
+  display: none;
+}
+
+dialog::backdrop {
+  background: rgba(80, 80, 80, .4);
+}
+
+form {
+  margin: 50px;
 }
