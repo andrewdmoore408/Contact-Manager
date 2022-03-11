@@ -165,7 +165,11 @@
 
     bindTagClick(handler) {
       document.querySelector('#tags').addEventListener('click', event => {
-        if (event.target.tagName === 'A') handler(event);
+        if (event.target.tagName === 'A') {
+          this.#updateTagHighlights(event);
+
+          handler(event);
+        }
       });
     }
 
@@ -181,6 +185,16 @@
       this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
 
       this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
+    }
+
+    #updateTagHighlights(event) {
+      [...document.querySelectorAll('a.tag')].forEach(tag => {
+        if (tag === event.target) {
+          tag.classList.toggle('activeFilter');
+        } else {
+          tag.classList.remove('activeFilter');
+        }
+      });
     }
   }
 
