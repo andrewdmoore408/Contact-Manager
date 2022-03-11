@@ -38,47 +38,51 @@
     {{/each}}
   </script>
   <script id="contactsTemplate" type="text/x-handlebars">
-    {{#each contacts}}
-      <div class="contact" data-contactId="{{this.id}}">
-        <h3 class="contactName">
-          {{this.full_name}}
-        </h3>
-        <p class="contactLabel">
-          Phone number:
-        </p>
-        <p class="contactInfo">
-          {{this.phone_number}}
-        </p>
-        <p class="contactLabel">
-          Email:
-        </p>
-        <p class="contactInfo">
-          {{this.email}}
-        </p>
+    {{#if contacts}}
+      {{#each contacts}}
+        <div class="contact" data-contactId="{{this.id}}">
+          <h3 class="contactName">
+            {{this.full_name}}
+          </h3>
           <p class="contactLabel">
-            Tags:
+            Phone number:
           </p>
-        {{#if tags}}
-          {{#each tags}}
-            <span class="contactInfo tagDisplay">
-              {{this}}
-            </span>
-          {{/each}}
-        {{else}}
+          <p class="contactInfo">
+            {{this.phone_number}}
+          </p>
+          <p class="contactLabel">
+            Email:
+          </p>
+          <p class="contactInfo">
+            {{this.email}}
+          </p>
+            <p class="contactLabel">
+              Tags:
+            </p>
+          {{#if tags}}
+            {{#each tags}}
+              <span class="contactInfo tagDisplay">
+                {{this}}
+              </span>
+            {{/each}}
+          {{else}}
+            <p>
+              None
+            </p>
+          {{/if}}
           <p>
-            None
+            <button type="button" class="contactButton">
+              Edit
+            </button>
+            <button type="button" class="contactButton">
+              Delete
+            </button>
           </p>
-        {{/if}}
-        <p>
-          <button type="button" class="contactButton">
-            Edit
-          </button>
-          <button type="button" class="contactButton">
-            Delete
-          </button>
-        </p>
-      </div>
-    {{/each}}
+        </div>
+      {{/each}}
+    {{else}}
+      <p class="noContactsMessage">No matching contacts</p>
+    {{/if}}
   </script>
 </body>
 </html>
