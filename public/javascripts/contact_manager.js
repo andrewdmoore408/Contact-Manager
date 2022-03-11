@@ -130,7 +130,26 @@
   }
 
   class View {
+    #templates;
 
+    constructor() {
+      this.#templates = {};
+      this.#setUpTemplates();
+    }
+
+    renderContacts(contacts) {
+        document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
+    }
+
+    renderTags(tags) {
+        document.querySelector('#tags').innerHTML = this.#templates.tagsTemplate({tags: tags});
+    }
+
+    #setUpTemplates() {
+      this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
+
+      this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
+    }
   }
 
   class Controller {
@@ -145,7 +164,20 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded!');
-  let model = new Model();
+  // let model = new Model();
+  // let view = new View();
+
+  // model.addTag('dog');
+  // model.addTag('frog');
+  // const tags = model.addTag('muppet').tags;
+
+  // view.renderTags(tags);
+
+  // model.getAllContacts().then(contacts => {
+  //   view.renderContacts(contacts);
+  // });
+
+  // view.renderContacts(model.getAllContacts());
 
   // model.addContact({
   //   full_name: "Kermit the Frog",
@@ -181,8 +213,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // model.filterByTag('dog').then(response => console.log(response));
 
-console.log(model.addTag('silly'));
-console.log(model.addTag('goose'));
-console.log(model.addTag('frog'));
+// console.log(model.addTag('silly'));
+// console.log(model.addTag('goose'));
+// console.log(model.addTag('frog'));
 // model.deleteTag('frog').then(response => console.log(response));
 });
