@@ -56,3 +56,7 @@ a.activeFilter {
   text-align: center;
   font-style: italic;
 }
+
+dialog input {
+  display: block;
+}
