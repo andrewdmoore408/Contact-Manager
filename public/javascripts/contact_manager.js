@@ -1,267 +1,284 @@
-  class Model {
-    #tagList;
+import debounce from "./debounce.js";
+class Model {
+  #tagList;
 
-    constructor() {
-      this.#tagList = [];
+  constructor() {
+    this.#tagList = [];
+  }
+
+  async init() {
+    this.#tagList = await this.#getDatabaseTags();
+  }
+
+  async addContact(contactInfo) {
+    const ADD_CONTACT_URL = '/api/contacts/';
+    const HEADERS = {
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      return await fetch(ADD_CONTACT_URL, {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify(contactInfo),
+      }).then(response => { return this.#handleDataUpdateResult(response) });
+    } catch (error) {
+      return {error: error};
+    }
+  }
+
+  addTag(tagName) {
+    tagName = tagName.toLowerCase();
+
+    if (this.#tagList.includes(tagName)) {
+      return {error: true, message: `The tag "${tagName}"  already exists`};
     }
 
-    async init() {
-      this.#tagList = await this.#getDatabaseTags();
-    }
+    this.#tagList.push(tagName);
+    return {error: false, message: `${tagName} has been added`, tags: this.#tagList.slice()};
+  }
 
-    async addContact(contactInfo) {
-      const ADD_CONTACT_URL = '/api/contacts/';
-      const HEADERS = {
-        'Content-Type': 'application/json',
-      };
+  async deleteTag(tagName) {
+    const contactsToUpdate = [];
+    const contacts = await this.getAllContacts();
 
-      try {
-        return await fetch(ADD_CONTACT_URL, {
-          method: 'POST',
-          headers: HEADERS,
-          body: JSON.stringify(contactInfo),
-        }).then(response => { return this.#handleDataUpdateResult(response) });
-      } catch (error) {
-        return {error: error};
+    contacts.forEach(contact => {
+      if (contact.tags) {
+        const tagList = contact.tags.split(',');
+        const deletedIndex = tagList.findIndex(tag => tag === tagName);
+
+        if (deletedIndex !== -1) {
+          tagList.splice(deletedIndex, 1);
+
+          contact.tags = tagList.join(',');
+          contactsToUpdate.push(contact);
+        }
       }
-    }
+    });
 
-    addTag(tagName) {
-      tagName = tagName.toLowerCase();
+    contactsToUpdate.forEach(async contact => {
+      await this.updateContact(contact.id, {tags: contact.tags});
+    });
 
-      if (this.#tagList.includes(tagName)) {
-        return {error: true, message: `The tag "${tagName}"  already exists`};
-      }
+    const tagIndexToDelete = this.#tagList.findIndex(tag => tag === tagName);
+    this.#tagList.splice(tagIndexToDelete, 1)
 
-      this.#tagList.push(tagName);
-      return {error: false, message: `${tagName} has been added`, tags: this.#tagList.slice()};
-    }
+    const updatedContacts = await this.getAllContacts();
 
-    async deleteTag(tagName) {
-      const contactsToUpdate = [];
-      const contacts = await this.getAllContacts();
+    return {tags: this.#tagList.slice(), contacts: updatedContacts};
+  }
 
-      contacts.forEach(contact => {
-        if (contact.tags) {
-          const tagList = contact.tags.split(',');
-          const deletedIndex = tagList.findIndex(tag => tag === tagName);
+  async filterByTag(tagName) {
+    const allContacts = await this.getAllContacts();
 
-          if (deletedIndex !== -1) {
-            tagList.splice(deletedIndex, 1);
+    return allContacts.filter(contact => {
+      if (!contact.tags) return false;
 
-            contact.tags = tagList.join(',');
-            contactsToUpdate.push(contact);
-          }
+      const tags = contact.tags.split(',');
+      return tags.includes(tagName);
+    });
+  }
+
+  async getAllContacts() {
+    const ALL_CONTACTS_URL = '/api/contacts';
+
+    const response = await fetch(ALL_CONTACTS_URL);
+    const allContacts = await response.json();
+    return allContacts;
+  }
+
+  getAllTags() {
+    return this.#tagList.slice();
+  }
+
+  async #getDatabaseTags() {
+    const allContacts = await this.getAllContacts();
+
+    const tags = allContacts.reduce((tagList, contact) => {
+      if (!contact.tags) return tagList;
+
+      contact.tags.split(',').forEach(tag => {
+        if (!tagList.includes(tag)) {
+          tagList.push(tag);
         }
       });
 
-      contactsToUpdate.forEach(async contact => {
-        await this.updateContact(contact.id, {tags: contact.tags});
-      });
+      return tagList;
+    }, []);
 
-      const tagIndexToDelete = this.#tagList.findIndex(tag => tag === tagName);
-      this.#tagList.splice(tagIndexToDelete, 1)
+    return tags;
+  }
 
-      const updatedContacts = await this.getAllContacts();
+  async deleteContact(id) {
+    const DELETE_CONTACT_URL = `/api/contacts/${id}`;
 
-      return {tags: this.#tagList.slice(), contacts: updatedContacts};
+    try {
+      return await fetch(DELETE_CONTACT_URL, {
+        method: 'DELETE',
+      }).then(response => { return this.#handleDataUpdateResult(response) });
+    } catch (error) {
+      return {error: error};
     }
+  }
 
-    async filterByTag(tagName) {
-      const allContacts = await this.getAllContacts();
-
-      return allContacts.filter(contact => {
-        if (!contact.tags) return false;
-
-        const tags = contact.tags.split(',');
-        return tags.includes(tagName);
-      });
+  async #handleDataUpdateResult(response) {
+    if (response.ok) {
+      return await this.getAllContacts();
+    } else {
+      return {
+        error: true,
+        message: `${response.status}: ${response.statusText}`,
+      };
     }
+  }
 
-    async getAllContacts() {
-      const ALL_CONTACTS_URL = '/api/contacts';
+  async searchContacts(searchString) {
+    const allContacts = await this.getAllContacts();
 
-      const response = await fetch(ALL_CONTACTS_URL);
-      const allContacts = await response.json();
-      return allContacts;
+    return allContacts.filter(contact => contact.full_name.toLowerCase().includes(searchString.toLowerCase()));
+  }
+
+  async updateContact(id, updatedContactInfo) {
+    const UPDATE_CONTACT_URL = `/api/contacts/${id}`;
+    const HEADERS = {
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      return await fetch(UPDATE_CONTACT_URL, {
+        method: 'PUT',
+        headers: HEADERS,
+        body: JSON.stringify(updatedContactInfo),
+      }).then(response => { return this.#handleDataUpdateResult(response) });
+    } catch (error) {
+      return {error: error};
     }
+  }
+}
 
-    getAllTags() {
-      return this.#tagList.slice();
-    }
+class View {
+  #templates;
 
-    async #getDatabaseTags() {
-      const allContacts = await this.getAllContacts();
+  constructor() {
+    this.#templates = {};
+    this.#setUpTemplates();
+  }
 
-      const tags = allContacts.reduce((tagList, contact) => {
-        if (!contact.tags) return tagList;
+  bindSearchBarInput(handler) {
+    document.querySelector('input').addEventListener('input', event => {
+      handler(event);
+    });
+  }
 
-        contact.tags.split(',').forEach(tag => {
-          if (!tagList.includes(tag)) {
-            tagList.push(tag);
-          }
-        });
+  bindTagClick(handler) {
+    document.querySelector('#tags').addEventListener('click', event => {
+      if (event.target.tagName === 'A') {
+        this.#updateTagHighlights(event);
 
-        return tagList;
-      }, []);
-
-      return tags;
-    }
-
-    async deleteContact(id) {
-      const DELETE_CONTACT_URL = `/api/contacts/${id}`;
-
-      try {
-        return await fetch(DELETE_CONTACT_URL, {
-          method: 'DELETE',
-        }).then(response => { return this.#handleDataUpdateResult(response) });
-      } catch (error) {
-        return {error: error};
+        handler(event);
       }
-    }
+    });
+  }
 
-    async #handleDataUpdateResult(response) {
-      if (response.ok) {
-        return await this.getAllContacts();
+  renderContacts(contacts) {
+    document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
+  }
+
+  renderTags(tags) {
+      document.querySelector('#tags').innerHTML = this.#templates.tagsTemplate({tags: tags});
+  }
+
+  #setUpTemplates() {
+    this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
+
+    this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
+  }
+
+  #updateTagHighlights(event) {
+    [...document.querySelectorAll('a.tag')].forEach(tag => {
+      if (tag === event.target) {
+        tag.classList.toggle('activeFilter');
       } else {
-        return {
-          error: true,
-          message: `${response.status}: ${response.statusText}`,
-        };
+        tag.classList.remove('activeFilter');
       }
-    }
+    });
+  }
+}
 
-    async searchContacts(searchString) {
-      const allContacts = await this.getAllContacts();
+class Controller {
+  #model;
+  #view;
+  #currentTagFilter;
 
-      return allContacts.filter(contact => contact.full_name.toLowerCase().includes(searchString.toLowerCase()));
-    }
+  constructor() {
+    this.#view = new View();
+    this.#model = new Model();
+    this.#currentTagFilter = null;
+    this.#handleSearchBar = debounce(this.#handleSearchBar.bind(this), 300);
 
-    async updateContact(id, updatedContactInfo) {
-      const UPDATE_CONTACT_URL = `/api/contacts/${id}`;
-      const HEADERS = {
-        'Content-Type': 'application/json',
-      };
-
-      try {
-        return await fetch(UPDATE_CONTACT_URL, {
-          method: 'PUT',
-          headers: HEADERS,
-          body: JSON.stringify(updatedContactInfo),
-        }).then(response => { return this.#handleDataUpdateResult(response) });
-      } catch (error) {
-        return {error: error};
-      }
-    }
+    this.#view.bindTagClick(this.#handleTagClick);
+    this.#view.bindSearchBarInput(this.#handleSearchBar);
   }
 
-  class View {
-    #templates;
+  async init() {
+    await this.#model.init();
 
-    constructor() {
-      this.#templates = {};
-      this.#setUpTemplates();
-    }
-
-    bindTagClick(handler) {
-      document.querySelector('#tags').addEventListener('click', event => {
-        if (event.target.tagName === 'A') {
-          this.#updateTagHighlights(event);
-
-          handler(event);
-        }
-      });
-    }
-
-    renderContacts(contacts) {
-      document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
-    }
-
-    renderTags(tags) {
-        document.querySelector('#tags').innerHTML = this.#templates.tagsTemplate({tags: tags});
-    }
-
-    #setUpTemplates() {
-      this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
-
-      this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
-    }
-
-    #updateTagHighlights(event) {
-      [...document.querySelectorAll('a.tag')].forEach(tag => {
-        if (tag === event.target) {
-          tag.classList.toggle('activeFilter');
-        } else {
-          tag.classList.remove('activeFilter');
-        }
-      });
-    }
+    this.#displayAllTags();
+    this.#displayAllContacts();
   }
 
-  class Controller {
-    #model;
-    #view;
-    #currentTagFilter;
+  #handleSearchBar = (event) => {
+    this.#model.searchContacts(event.target.value).then(searchResults => {
+      searchResults = this.#splitContactTags(searchResults);
 
-    constructor() {
-      this.#view = new View();
-      this.#model = new Model();
+      this.#view.renderContacts(searchResults);
+    });
+  }
+
+  #handleTagClick = (event) => {
+    const tagName = event.target.getAttribute('data-tagName');
+
+    if (this.#currentTagFilter === tagName) {
       this.#currentTagFilter = null;
-
-      this.#view.bindTagClick(this.#handleTagClick);
-    }
-
-    async init() {
-      await this.#model.init();
-
-      this.#displayAllTags();
       this.#displayAllContacts();
-    }
+    } else {
+      this.#currentTagFilter = tagName;
+      const filteredContacts = this.#model.filterByTag(tagName);
 
-    #handleTagClick = (event) => {
-      const tagName = event.target.getAttribute('data-tagName');
+      filteredContacts.then(filteredContacts => {
+        filteredContacts = this.#splitContactTags(filteredContacts);
 
-      if (this.#currentTagFilter === tagName) {
-        this.#currentTagFilter = null;
-        this.#displayAllContacts();
-      } else {
-        this.#currentTagFilter = tagName;
-        const filteredContacts = this.#model.filterByTag(tagName);
-
-        filteredContacts.then(filteredContacts => {
-          filteredContacts = this.#splitContactTags(filteredContacts);
-
-          this.#view.renderContacts(filteredContacts);
-        });
-      }
-    }
-
-    #displayAllContacts() {
-      const allContacts = this.#model.getAllContacts();
-
-      allContacts.then(contacts => {
-        contacts = this.#splitContactTags(contacts);
-
-        this.#view.renderContacts(contacts);
-      })
-    }
-
-    #displayAllTags() {
-      const allTags = this.#model.getAllTags();
-
-      this.#view.renderTags(allTags);
-    }
-
-    #splitContactTags(contacts) {
-      return contacts.map(contact => {
-        if (contact.tags) {
-          contact.tags = contact.tags.split(',');
-        }
-
-        return contact;
+        this.#view.renderContacts(filteredContacts);
       });
     }
   }
+
+  #displayAllContacts() {
+    const allContacts = this.#model.getAllContacts();
+
+    allContacts.then(contacts => {
+      contacts = this.#splitContactTags(contacts);
+
+      this.#view.renderContacts(contacts);
+    })
+  }
+
+  #displayAllTags() {
+    const allTags = this.#model.getAllTags();
+
+    this.#view.renderTags(allTags);
+  }
+
+  #splitContactTags(contacts) {
+    return contacts.map(contact => {
+      if (contact.tags) {
+        contact.tags = contact.tags.split(',');
+      }
+
+      return contact;
+    });
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded!');
