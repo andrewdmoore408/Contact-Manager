@@ -282,8 +282,8 @@ class Controller {
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded!');
-  let model = new Model();
-  let view = new View();
+  // let model = new Model();
+  // let view = new View();
 
   // model.addTag('dog');
   // model.addTag('frog');
@@ -292,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // model.addTag('investigator');
   // const tags = model.addTag('icon').tags;
 
-  view.renderTags(tags);
+  // view.renderTags(tags);
 
   new Controller().init();
 
