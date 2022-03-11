@@ -158,10 +158,27 @@ class Model {
 
 class View {
   #templates;
+  #addContactForm;
+  #contacts;
 
   constructor() {
     this.#templates = {};
     this.#setUpTemplates();
+    this.#addContactForm = document.querySelector('#addContactForm');
+    this.#contacts = document.querySelector('#contacts');
+
+    this.handleAddContactClick();
+
+    this.bindAddContactSubmit(this.#handleAddContactForm);
+    this.#bindCancelAddContact();
+  }
+
+  bindAddContactSubmit(handler) {
+    this.#addContactForm.addEventListener('submit', event => {
+      event.preventDefault();
+
+      console.log('submitted');
+    });
   }
 
   bindSearchBarInput(handler) {
@@ -173,11 +190,37 @@ class View {
   bindTagClick(handler) {
     document.querySelector('#tags').addEventListener('click', event => {
       if (event.target.tagName === 'A') {
+        event.preventDefault();
         this.#updateTagHighlights(event);
 
         handler(event);
       }
     });
+  }
+
+  handleAddContactClick(handler) {
+    document.querySelector('#addContactButton').addEventListener('click', event => {
+      this.#hideContacts();
+      this.#addContactForm.classList.remove('hidden');
+    });
+  }
+
+  #handleAddContactForm(event) {}
+
+  #bindCancelAddContact() {
+    document.querySelector('#cancelAddContact').addEventListener('click', event => {
+      this.#showContacts();
+
+      [...this.#addContactForm.querySelectorAll('input')].forEach(input => {
+        input.value = '';
+      });
+
+      this.#addContactForm.classList.add('hidden');
+    });
+  }
+
+  #hideContacts() {
+    this.#contacts.classList.add('hidden');
   }
 
   renderContacts(contacts) {
@@ -192,6 +235,10 @@ class View {
     this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
 
     this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
+  }
+
+  #showContacts() {
+    this.#contacts.classList.remove('hidden');
   }
 
   #updateTagHighlights(event) {
