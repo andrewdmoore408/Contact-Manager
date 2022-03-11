@@ -137,8 +137,16 @@
       this.#setUpTemplates();
     }
 
+    bindTagClick(handler) {
+      document.querySelector('#tags').addEventListener('click', event => {
+        if (event.target.tagName === 'A') handler(event);
+      });
+    }
+
     renderContacts(contacts) {
-        document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
+      console.log(`in renderContacts: contacts points to ${contacts.forEach(contact => console.log(contact))}`);
+
+      document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
     }
 
     renderTags(tags) {
@@ -164,18 +172,50 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOMContentLoaded!');
-  // let model = new Model();
-  // let view = new View();
+  let model = new Model();
+  let view = new View();
 
-  // model.addTag('dog');
-  // model.addTag('frog');
-  // const tags = model.addTag('muppet').tags;
+  view.bindTagClick(event => {
+    console.log('tag clicked!');
+    const tagName = event.target.getAttribute('data-tagName');
 
-  // view.renderTags(tags);
+    const filteredContacts = model.filterByTag(tagName);
 
-  // model.getAllContacts().then(contacts => {
-  //   view.renderContacts(contacts);
-  // });
+    filteredContacts.then(filteredContacts => {
+      filteredContacts = filteredContacts.map(contact => {
+        if (contact.tags) {
+          contact.tags = contact.tags.split(',');
+        }
+
+        return contact;
+      });
+
+      view.renderContacts(filteredContacts);
+    });
+  });
+
+  model.addTag('dog');
+  model.addTag('frog');
+  model.addTag('work');
+  model.addTag('friend');
+  model.addTag('investigator');
+  const tags = model.addTag('icon').tags;
+
+  view.renderTags(tags);
+
+  model.getAllContacts().then(contacts => {
+    contacts = contacts.map(contact => {
+      if (contact.tags) {
+        contact.tags = contact.tags.split(',');
+      }
+
+      return contact;
+    });
+
+    view.renderContacts(contacts);
+
+
+  });
 
   // view.renderContacts(model.getAllContacts());
 
