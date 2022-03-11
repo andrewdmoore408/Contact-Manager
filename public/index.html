@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Contacts Manager</title>
   <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./stylesheets/contact_manager.css">
   <script src="/javascripts/jquery.js"></script>
   <script src="/javascripts/handlebars.js"></script>
   <script src="/javascripts/contact_manager.js"></script>
@@ -21,7 +22,12 @@
     <input type="text" id="searchBar" placeholder="Search">
   </header>
   <main>
-    <div id="tags"></div>
+    <div id="tagSection">
+      <button type="button" id="addTagButton">
+        Add tag
+      </button>
+      <div id="tags"></div>
+    </div>
     <div id="contacts"></div>
   </main>
   <script id="tagsTemplate" type="text/x-handlebars">
@@ -49,20 +55,28 @@
         <p class="contactInfo">
           {{this.email}}
         </p>
-        {{#if tags}}
           <p class="contactLabel">
             Tags:
           </p>
-          <p class="contactInfo">
-            {{this.tags}}
+        {{#if tags}}
+          {{#each tags}}
+            <span class="contactInfo tagDisplay">
+              {{this}}
+            </span>
+          {{/each}}
+        {{else}}
+          <p>
+            None
           </p>
         {{/if}}
-        <button type="button" class="contactButton">
-          Edit
-        </button>
-        <button type="button" class="contactButton">
-          Delete
-        </button>
+        <p>
+          <button type="button" class="contactButton">
+            Edit
+          </button>
+          <button type="button" class="contactButton">
+            Delete
+          </button>
+        </p>
       </div>
     {{/each}}
   </script>

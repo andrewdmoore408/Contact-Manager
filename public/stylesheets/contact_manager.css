@@ -1,5 +1,22 @@
+body {
+  background-color: rgb(220, 236, 255);
+}
+
 main {
   margin-top: 50px;
+}
+
+button {
+  margin: 7px;
+}
+
+a {
+  display: inline-block;
+  border: 1px solid;
+  padding: 6px;
+  margin: 5px;
+  margin-top: 20px;
+  background-color: rgb(220, 245, 200);
 }
 
 .contact {
@@ -12,8 +29,8 @@ main {
   border-width: 1px;
   border-radius: 0.5rem;
 
-  background-color: aliceblue;
-  min-width: 100px;
+  background-color: rgb(254, 255, 247);
+  min-width: 150px;
 }
 
 .contactLabel {
