@@ -16,7 +16,7 @@
           method: 'POST',
           headers: HEADERS,
           body: JSON.stringify(contactInfo),
-        }).then(response => response.json());
+        }).then(response => { return this.#handleDataUpdateResult(response) });
       } catch (error) {
         return {error: error};
       }
@@ -30,7 +30,7 @@
       }
 
       this.#tagList.push(tagName);
-      return {error: false, message: `${tagName} has been added`};
+      return {error: false, message: `${tagName} has been added`, tags: this.#tagList.slice()};
     }
 
     async deleteTag(tagName) {
@@ -54,6 +54,13 @@
       contactsToUpdate.forEach(async contact => {
         await this.updateContact(contact.id, {tags: contact.tags});
       });
+
+      const tagIndexToDelete = this.#tagList.findIndex(tag => tag === tagName);
+      this.#tagList.splice(tagIndexToDelete, 1)
+
+      const updatedContacts = await this.getAllContacts();
+
+      return {tags: this.#tagList.slice(), contacts: updatedContacts};
     }
 
     async filterByTag(tagName) {
@@ -81,9 +88,20 @@
       try {
         return await fetch(DELETE_CONTACT_URL, {
           method: 'DELETE',
-        }).then(response => response.status);
+        }).then(response => { return this.#handleDataUpdateResult(response) });
       } catch (error) {
         return {error: error};
+      }
+    }
+
+    async #handleDataUpdateResult(response) {
+      if (response.ok) {
+        return await this.getAllContacts();
+      } else {
+        return {
+          error: true,
+          message: `${response.status}: ${response.statusText}`,
+        };
       }
     }
 
@@ -97,14 +115,14 @@
       const UPDATE_CONTACT_URL = `/api/contacts/${id}`;
       const HEADERS = {
         'Content-Type': 'application/json',
-      }
+      };
 
       try {
         return await fetch(UPDATE_CONTACT_URL, {
           method: 'PUT',
           headers: HEADERS,
           body: JSON.stringify(updatedContactInfo),
-        }).then(response => response.json());
+        }).then(response => { return this.#handleDataUpdateResult(response) });
       } catch (error) {
         return {error: error};
       }
@@ -130,26 +148,26 @@ document.addEventListener('DOMContentLoaded', () => {
   let model = new Model();
 
   // model.addContact({
-  //   full_name: "Scooby-Doo",
-  //   email: "email@addy.com",
-  //   phone_number: "119",
-  //   tags: "investigator,programmer",
+  //   full_name: "Kermit the Frog",
+  //   email: "green@kermitthefrog.com",
+  //   phone_number: "12345",
+  //   tags: "performer,icon,legend,frog",
   // }).then(response => console.log(response));
 
   // model.getAllContacts().then(response => console.log(`response is: ${response.forEach(object => console.log(object))}`));
 
-  // model.deleteContact(7).then(response => console.log(`delete status: ${response}`));
+  // model.deleteContact(14).then(response => response.forEach(contact => console.log(contact)));
 
 //   model.searchContacts('I').then(response => response.forEach(contact => console.log(contact)));
 
 //   model.searchContacts('n').then(response => response.forEach(contact => console.log(contact)));
 
-//   model.updateContact(4, {
-//     full_name: 'Scooby-Doo',
-//     phone_number: '119',
-//     email: 'scoobz@zoinks.com',
-//     tags: 'investigator,dog,icon',
-//   }).then(response => console.log(response));
+// model.updateContact(4, {
+//   full_name: 'Scooby-Doo',
+//   phone_number: '119',
+//   email: 'scoobz@zoinks.com',
+//   tags: 'investigator,dog,icon,star',
+// }).then(response => response.forEach(contact => console.log(contact)));
 
 // console.log(model.addTag('investigator'));
 // console.log(model.addTag('actor'));
@@ -163,5 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // model.filterByTag('dog').then(response => console.log(response));
 
-// model.deleteTag('dog');
+console.log(model.addTag('silly'));
+console.log(model.addTag('goose'));
+console.log(model.addTag('frog'));
+// model.deleteTag('frog').then(response => console.log(response));
 });
