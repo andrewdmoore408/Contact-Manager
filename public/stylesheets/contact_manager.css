@@ -19,6 +19,11 @@ a {
   background-color: rgb(220, 245, 200);
 }
 
+a.activeFilter {
+  background-color: rgb(140, 165, 120);
+  color: white;
+}
+
 .contact {
   display: inline-block;
 
@@ -36,4 +41,12 @@ a {
 .contactLabel {
   font-weight: bolder;
   font-size: smaller;
+}
+
+.noContactsMessage {
+  margin-top: 100px;
+  text-align: center;
+
+  font-size: large;
+  font-style: italic;
 }
