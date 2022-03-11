@@ -1,0 +1,22 @@
+main {
+  margin-top: 50px;
+}
+
+.contact {
+  display: inline-block;
+
+  margin: 25px;
+  padding: 20px;
+
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0.5rem;
+
+  background-color: aliceblue;
+  min-width: 100px;
+}
+
+.contactLabel {
+  font-weight: bolder;
+  font-size: smaller;
+}
