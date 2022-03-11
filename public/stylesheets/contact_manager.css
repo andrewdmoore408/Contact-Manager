@@ -11,6 +11,7 @@ button {
 }
 
 a {
+  cursor: pointer;
   display: inline-block;
   border: 1px solid;
   padding: 6px;
@@ -48,5 +49,10 @@ a.activeFilter {
   text-align: center;
 
   font-size: large;
+  font-style: italic;
+}
+
+.noTagsMessage {
+  text-align: center;
   font-style: italic;
 }
