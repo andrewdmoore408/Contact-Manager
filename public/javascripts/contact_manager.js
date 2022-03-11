@@ -5,6 +5,10 @@
       this.#tagList = [];
     }
 
+    async init() {
+      this.#tagList = await this.#getDatabaseTags();
+    }
+
     async addContact(contactInfo) {
       const ADD_CONTACT_URL = '/api/contacts/';
       const HEADERS = {
@@ -82,6 +86,28 @@
       return allContacts;
     }
 
+    getAllTags() {
+      return this.#tagList.slice();
+    }
+
+    async #getDatabaseTags() {
+      const allContacts = await this.getAllContacts();
+
+      const tags = allContacts.reduce((tagList, contact) => {
+        if (!contact.tags) return tagList;
+
+        contact.tags.split(',').forEach(tag => {
+          if (!tagList.includes(tag)) {
+            tagList.push(tag);
+          }
+        });
+
+        return tagList;
+      }, []);
+
+      return tags;
+    }
+
     async deleteContact(id) {
       const DELETE_CONTACT_URL = `/api/contacts/${id}`;
 
@@ -144,8 +170,6 @@
     }
 
     renderContacts(contacts) {
-      console.log(`in renderContacts: contacts points to ${contacts.forEach(contact => console.log(contact))}`);
-
       document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
     }
 
@@ -171,7 +195,12 @@
       this.#currentTagFilter = null;
 
       this.#view.bindTagClick(this.#handleTagClick);
+    }
 
+    async init() {
+      await this.#model.init();
+
+      this.#displayAllTags();
       this.#displayAllContacts();
     }
 
@@ -203,6 +232,12 @@
       })
     }
 
+    #displayAllTags() {
+      const allTags = this.#model.getAllTags();
+
+      this.#view.renderTags(allTags);
+    }
+
     #splitContactTags(contacts) {
       return contacts.map(contact => {
         if (contact.tags) {
@@ -219,16 +254,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let model = new Model();
   let view = new View();
 
-  model.addTag('dog');
-  model.addTag('frog');
-  model.addTag('work');
-  model.addTag('friend');
-  model.addTag('investigator');
-  const tags = model.addTag('icon').tags;
+  // model.addTag('dog');
+  // model.addTag('frog');
+  // model.addTag('work');
+  // model.addTag('friend');
+  // model.addTag('investigator');
+  // const tags = model.addTag('icon').tags;
 
   view.renderTags(tags);
 
-  new Controller();
+  new Controller().init();
 
   // model.getAllContacts().then(contacts => {
   //   contacts = contacts.map(contact => {
