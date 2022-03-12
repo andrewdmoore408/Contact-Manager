@@ -200,6 +200,7 @@ class View {
   #bindAddContactButtonClick(handler) {
     document.querySelector('#addContactButton').addEventListener('click', event => {
       this.#hideContacts();
+      this.#renderTagCheckboxes();
       this.#addContactForm.classList.remove('hidden');
     });
   }
@@ -229,6 +230,10 @@ class View {
       document.querySelector('#tags').innerHTML = this.#templates.tagsTemplate({tags: tags});
   }
 
+  #renderTagCheckboxes() {
+    document.querySelector('#addContactAvailableTags').innerHTML = this.#templates.addContactTagsTemplate({tags: ['icon', 'investigator', 'dog', 'friend']});
+  }
+
   #resetForm() {
     [...this.#addContactForm.querySelectorAll('input')].forEach(input => {
       input.value = '';
@@ -239,6 +244,8 @@ class View {
     this.#templates.contactsTemplate = Handlebars.compile(document.querySelector('#contactsTemplate').innerHTML);
 
     this.#templates.tagsTemplate = Handlebars.compile(document.querySelector('#tagsTemplate').innerHTML);
+
+    this.#templates.addContactTagsTemplate = Handlebars.compile(document.querySelector('#addContactTagsTemplate').innerHTML);
   }
 
   #showContacts() {

@@ -42,6 +42,10 @@
       <label for="phone_number">Phone number:
         <input type="text" name="phone_number" placeholder="Phone number" required>
       </label>
+      <fieldset>
+        <legend>Contact Tags</legend>
+        <div id="addContactAvailableTags"></div>
+      </fieldset>
       <button type="submit">Add contact</button>
       <button type="button" id="cancelAddContact" autofocus>Cancel</button>
     </form>
@@ -98,6 +102,15 @@
       {{/each}}
     {{else}}
       <p class="noContactsMessage">No matching contacts</p>
+    {{/if}}
+  </script>
+  <script id="addContactTagsTemplate" type ="text/x-handlebars">
+    {{#if tags}}
+      {{#each tags}}
+        <label class="tagCheckboxLabel">{{this}}
+          <input class="tagCheckbox" type="checkbox" name="{{this}}" value="{{this}}">
+        </label>
+      {{/each}}
     {{/if}}
   </script>
 </body>
