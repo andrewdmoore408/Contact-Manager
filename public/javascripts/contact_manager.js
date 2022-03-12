@@ -215,6 +215,14 @@ class View {
     });
   }
 
+  #getCurrentTags() {
+    return [...document.querySelectorAll('a.tag')].reduce((tagList, anchor) => {
+      tagList.push(anchor.getAttribute('data-tagname'));
+
+      return tagList;
+    }, []);
+  }
+
   #hideContacts() {
     this.#contacts.classList.add('hidden');
   }
@@ -231,7 +239,7 @@ class View {
   }
 
   #renderTagCheckboxes() {
-    document.querySelector('#addContactAvailableTags').innerHTML = this.#templates.addContactTagsTemplate({tags: ['icon', 'investigator', 'dog', 'friend']});
+    document.querySelector('#addContactAvailableTags').innerHTML = this.#templates.addContactTagsTemplate({tags: this.#getCurrentTags()});
   }
 
   #resetForm() {
@@ -286,6 +294,23 @@ class Controller {
     this.#displayAllContacts();
   }
 
+  #constructTagList(formData) {
+    const DISREGARDED_KEYS = ['full_name', 'phone_number', 'email'];
+    const tags = [];
+
+    for (let key of formData.keys()) {
+      if (!DISREGARDED_KEYS.includes(key)) {
+        tags.push(key);
+      }
+    }
+
+    if (tags.length === 0) {
+      return '';
+    } else {
+      return tags.join(',');
+    }
+  }
+
   #handleAddContact = async (form) => {
     const formData = new FormData(form);
 
@@ -293,7 +318,7 @@ class Controller {
       full_name: formData.get('full_name'),
       phone_number: formData.get('phone_number'),
       email: formData.get('email'),
-      // full_name: formData.get('full_name'),
+      tags: this.#constructTagList(formData),
     };
 
     const updatedContacts = await this.#model.addContact(newContact);
