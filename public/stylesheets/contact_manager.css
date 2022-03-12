@@ -6,8 +6,9 @@ main {
   margin-top: 50px;
 }
 
-button {
+input, button {
   margin: 7px;
+  padding: 7px;
 }
 
 a {
