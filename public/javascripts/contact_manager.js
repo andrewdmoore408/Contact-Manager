@@ -167,9 +167,7 @@ class View {
     this.#addContactForm = document.querySelector('#addContactForm');
     this.#contacts = document.querySelector('#contacts');
 
-    this.handleAddContactClick();
-
-    this.bindAddContactSubmit(this.#handleAddContactForm);
+    this.#bindAddContactButtonClick();
     this.#bindCancelAddContact();
   }
 
@@ -177,7 +175,8 @@ class View {
     this.#addContactForm.addEventListener('submit', event => {
       event.preventDefault();
 
-      console.log('submitted');
+      setTimeout(this.#resetForm.bind(this), 300);
+      handler(event.currentTarget);
     });
   }
 
@@ -198,22 +197,18 @@ class View {
     });
   }
 
-  handleAddContactClick(handler) {
+  #bindAddContactButtonClick(handler) {
     document.querySelector('#addContactButton').addEventListener('click', event => {
       this.#hideContacts();
       this.#addContactForm.classList.remove('hidden');
     });
   }
 
-  #handleAddContactForm(event) {}
-
   #bindCancelAddContact() {
     document.querySelector('#cancelAddContact').addEventListener('click', event => {
       this.#showContacts();
 
-      [...this.#addContactForm.querySelectorAll('input')].forEach(input => {
-        input.value = '';
-      });
+      this.#resetForm();
 
       this.#addContactForm.classList.add('hidden');
     });
@@ -224,11 +219,20 @@ class View {
   }
 
   renderContacts(contacts) {
+    this.#addContactForm.classList.add('hidden');
+    this.#showContacts();
+
     document.querySelector('#contacts').innerHTML = this.#templates.contactsTemplate({ contacts: contacts});
   }
 
   renderTags(tags) {
       document.querySelector('#tags').innerHTML = this.#templates.tagsTemplate({tags: tags});
+  }
+
+  #resetForm() {
+    [...this.#addContactForm.querySelectorAll('input')].forEach(input => {
+      input.value = '';
+    });
   }
 
   #setUpTemplates() {
@@ -265,12 +269,27 @@ class Controller {
 
     this.#view.bindTagClick(this.#handleTagClick);
     this.#view.bindSearchBarInput(this.#handleSearchBar);
+    this.#view.bindAddContactSubmit(this.#handleAddContact);
   }
 
   async init() {
     await this.#model.init();
 
     this.#displayAllTags();
+    this.#displayAllContacts();
+  }
+
+  #handleAddContact = async (form) => {
+    const formData = new FormData(form);
+
+    const newContact = {
+      full_name: formData.get('full_name'),
+      phone_number: formData.get('phone_number'),
+      email: formData.get('email'),
+      // full_name: formData.get('full_name'),
+    };
+
+    const updatedContacts = await this.#model.addContact(newContact);
     this.#displayAllContacts();
   }
 
